@@ -15,6 +15,7 @@ jobs:
           - 1.18.0
           - 1.20.2
           - 1.22.0
+          - 1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,6 +38,7 @@ jobs:
           - 1.18.0
           - 1.20.2
           - 1.22.0
+          - 1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -59,6 +61,7 @@ jobs:
           - 1.18.0
           - 1.20.2
           - 1.22.0
+          - 1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -88,6 +91,7 @@ jobs:
           - 1.18.0
           - 1.20.2
           - 1.22.0
+          - 1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -117,6 +121,7 @@ jobs:
           - 1.18.0
           - 1.20.2
           - 1.22.0
+          - 1.23.3
     steps:
       - name: Checkout
         uses: actions/checkout@v2
