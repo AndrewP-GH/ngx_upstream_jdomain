@@ -256,6 +256,14 @@ ngx_http_upstream_init_jdomain_peer(ngx_http_request_t *r, ngx_http_upstream_srv
 		if (ctx->state == NGX_AGAIN) {
 			instance[i].state.resolve.status = NGX_JDOMAIN_STATUS_WAIT;
 		}
+		ngx_log_error(NGX_LOG_DEBUG,
+		              r->connection->log,
+		              0,
+		              "ngx_http_upstream_jdomain_module: resolve state: \"%V\" (%i: %s), rc: %i",
+		              &ctx->name,
+		              ctx->state,
+		              ngx_resolver_strerror(ctx->state),
+									rc);
 	}
 
 end:
@@ -279,6 +287,11 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	u_char *name;
 	ngx_addr_t *addr;
 	ngx_http_upstream_rr_peer_t **peerp;
+
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP,
+	               ctx->resolver->log,
+	               0,
+	               "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_resolve_handler called");
 
 	instance = (ngx_http_upstream_jdomain_instance_t *)ctx->data;
 
