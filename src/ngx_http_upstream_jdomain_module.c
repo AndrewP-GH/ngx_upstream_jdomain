@@ -288,10 +288,11 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	ngx_addr_t *addr;
 	ngx_http_upstream_rr_peer_t **peerp;
 
-	ngx_log_debug0(NGX_LOG_DEBUG_HTTP,
-	               ctx->resolver->log,
-	               0,
-	               "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_resolve_handler called");
+	ngx_log_error(NGX_LOG_WARN,
+	              ctx->resolver->log,
+	              0,
+	              "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_resolve_handler called: \"%V\"",
+	              &ctx->name);
 
 	instance = (ngx_http_upstream_jdomain_instance_t *)ctx->data;
 
@@ -321,7 +322,7 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	}
 
 	ngx_log_error(
-	  NGX_LOG_DEBUG,
+	  NGX_LOG_WARN,
 	  ctx->resolver->log,
 	  0,
 	  "ngx_http_upstream_jdomain_module: resolver state: \"%V\" (%i: %s), addresses: %i, isDown: %i, exists_alt_server: %i",
