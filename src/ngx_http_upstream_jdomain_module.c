@@ -312,7 +312,7 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 		ngx_log_error((instance->state.data.server->down ? NGX_LOG_WARN : NGX_LOG_ERR),
 		              ctx->resolver->log,
 		              0,
-		              "ngx_http_upstream_jdomain_module: resolver failed, \"%V\" (%i: %s)",
+		              "ngx_http_upstream_jdomain_module: resolver failed :( :\"%V\" (%i: %s)",
 		              &ctx->name,
 		              ctx->state,
 		              ngx_resolver_strerror(ctx->state));
