@@ -307,10 +307,10 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 
 	/* Determine if there was an error and if so, should we mark the instance as down or not */
 	if (ctx->state || ctx->naddrs == 0) {
-		instance->state.data.server->down =
-		  exists_alt_server && (instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
+		instance->state.data.server->down = exists_alt_server &&
+			(instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
 		ngx_log_error(NGX_LOG_ERR,
-		              ctx->resolver->log,
+									ctx->resolver->log,
 		              0,
 		              "ngx_http_upstream_jdomain_module: resolver failed:\"%V\" (%i: %s), isDown: %i, exists_alt_server: %i",
 		              &ctx->name,
@@ -344,15 +344,13 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers, marking associated peers up */
 	f = 0;
 	for (i = 0; i < ctx->naddrs; i++) {
-		// ngx_log_error(NGX_LOG_ERR,
-		//               ctx->resolver->log,
-		//               0,
-		//               "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i,
-		//               address: \"%V\" ", &ctx->name,
-		// 							f,
-		//               instance->conf.addr_family,
-		//               ctx->addrs[i].sockaddr->sa_family,
-		//               &sockaddr[f].sockaddr);
+		ngx_log_error(
+		  NGX_LOG_ERR,
+		  ctx->resolver->log,
+		  0,
+		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i,
+		  address
+		  : \"%V\" ", &ctx->name, f, instance->conf.addr_family, ctx->addrs[i].sockaddr->sa_family, &sockaddr[f].sockaddr);
 
 		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
 		    instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
