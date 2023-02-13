@@ -308,10 +308,10 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 
 	/* Determine if there was an error and if so, should we mark the instance as down or not */
 	if (ctx->state || ctx->naddrs == 0) {
-		instance->state.data.server->down = exists_alt_server &&
-			(instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
+		instance->state.data.server->down =
+		  exists_alt_server && (instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
 		ngx_log_error(NGX_LOG_ERR,
-									ctx->resolver->log,
+		              ctx->resolver->log,
 		              0,
 		              "ngx_http_upstream_jdomain_module: resolver failed:\"%V\" (%i: %s), isDown: %i, exists_alt_server: %i",
 		              &ctx->name,
