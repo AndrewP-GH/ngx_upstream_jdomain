@@ -307,7 +307,8 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 
 	/* Determine if there was an error and if so, should we mark the instance as down or not */
 	if (ctx->state || ctx->naddrs == 0) {
-		instance->state.data.server->down = exists_alt_server && (instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
+		instance->state.data.server->down =
+		  exists_alt_server && (instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
 		ngx_log_error(NGX_LOG_ERR,
 		              ctx->resolver->log,
 		              0,
@@ -343,35 +344,35 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers, marking associated peers up */
 	f = 0;
 	for (i = 0; i < ctx->naddrs; i++) {
-		            if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
-		                instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
-			            continue;
-		            }
-		            addr[f].sockaddr = &sockaddr[f].sockaddr;
-		            addr[f].socklen = peerp[f]->socklen = ctx->addrs[i].socklen;
-		            ngx_memcpy(addr[f].sockaddr, ctx->addrs[i].sockaddr, addr[f].socklen);
-		            ngx_inet_set_port(addr[f].sockaddr, instance->conf.port);
-		            addr[f].name.data = peerp[f]->name.data = &name[f * NGX_SOCKADDR_STRLEN];
-		            addr[f].name.len = peerp[f]->name.len =
-		              ngx_sock_ntop(addr[f].sockaddr, addr[f].socklen, addr[f].name.data, NGX_SOCKADDR_STRLEN, 1);
-		            peerp[f]->down = 0;
-		            instance->state.data.server->down = 0;
-		            f++;
-		            if (instance->conf.max_ips == f) {
-			            break;
-		            }
+		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
+		    instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
+			continue;
+		}
+		addr[f].sockaddr = &sockaddr[f].sockaddr;
+		addr[f].socklen = peerp[f]->socklen = ctx->addrs[i].socklen;
+		ngx_memcpy(addr[f].sockaddr, ctx->addrs[i].sockaddr, addr[f].socklen);
+		ngx_inet_set_port(addr[f].sockaddr, instance->conf.port);
+		addr[f].name.data = peerp[f]->name.data = &name[f * NGX_SOCKADDR_STRLEN];
+		addr[f].name.len = peerp[f]->name.len =
+		  ngx_sock_ntop(addr[f].sockaddr, addr[f].socklen, addr[f].name.data, NGX_SOCKADDR_STRLEN, 1);
+		peerp[f]->down = 0;
+		instance->state.data.server->down = 0;
+		f++;
+		if (instance->conf.max_ips == f) {
+			break;
+		}
 	}
 	instance->state.data.server->naddrs = f;
 	instance->state.data.naddrs = instance->state.data.server->naddrs;
 	/* Copy the sockaddr and name of the invalid address (0.0.0.0:0) into the remaining buffers, marking associated peers down */
 	for (i = instance->state.data.naddrs; i < ngx_min(naddrs_prev, instance->conf.max_ips); i++) {
-		            addr[i].name.data = &name[i * NGX_SOCKADDR_STRLEN];
-		            addr[i].name.len = peerp[i]->name.len = NGX_JDOMAIN_INVALID_ADDR.name.len;
-		            ngx_memcpy(addr[i].name.data, NGX_JDOMAIN_INVALID_ADDR.name.data, addr[i].name.len);
-		            addr[i].sockaddr = &sockaddr[i].sockaddr;
-		            addr[i].socklen = peerp[i]->socklen = NGX_JDOMAIN_INVALID_ADDR.socklen;
-		            ngx_memcpy(addr[i].sockaddr, NGX_JDOMAIN_INVALID_ADDR.sockaddr, addr[i].socklen);
-		            peerp[i]->down = 1;
+		addr[i].name.data = &name[i * NGX_SOCKADDR_STRLEN];
+		addr[i].name.len = peerp[i]->name.len = NGX_JDOMAIN_INVALID_ADDR.name.len;
+		ngx_memcpy(addr[i].name.data, NGX_JDOMAIN_INVALID_ADDR.name.data, addr[i].name.len);
+		addr[i].sockaddr = &sockaddr[i].sockaddr;
+		addr[i].socklen = peerp[i]->socklen = NGX_JDOMAIN_INVALID_ADDR.socklen;
+		ngx_memcpy(addr[i].sockaddr, NGX_JDOMAIN_INVALID_ADDR.sockaddr, addr[i].socklen);
+		peerp[i]->down = 1;
 	}
 
 end:
@@ -393,8 +394,8 @@ ngx_http_upstream_jdomain_create_conf(ngx_conf_t *cf)
 
 	conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_upstream_jdomain_srv_conf_t));
 	if (!conf) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_pcalloc conf fail");
-		            return NULL;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_pcalloc conf fail");
+		return NULL;
 	}
 
 	return conf;
@@ -412,14 +413,14 @@ ngx_http_upstream_jdomain_create_instance(ngx_conf_t *cf, ngx_http_upstream_jdom
 	conf->instances =
 	  conf->instances ? conf->instances : ngx_array_create(cf->pool, 1, sizeof(ngx_http_upstream_jdomain_instance_t));
 	if (!conf->instances) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create instances fail");
-		            return NULL;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create instances fail");
+		return NULL;
 	}
 
 	instance = ngx_array_push(conf->instances);
 	if (instance == NULL) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push instances fail");
-		            return NULL;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push instances fail");
+		return NULL;
 	}
 	ngx_memzero(instance, sizeof(ngx_http_upstream_jdomain_instance_t));
 
@@ -442,45 +443,45 @@ ngx_http_upstream_jdomain_init_instance_data(ngx_conf_t *cf, ngx_http_upstream_j
 {
 	instance->state.data.addrs = ngx_array_create(cf->pool, instance->conf.max_ips, sizeof(ngx_addr_t));
 	if (!instance->state.data.addrs) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create addrs fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create addrs fail");
+		return NGX_ERROR;
 	}
 	if (!ngx_array_push_n(instance->state.data.addrs, instance->conf.max_ips)) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n addrs fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n addrs fail");
+		return NGX_ERROR;
 	}
 	ngx_memzero(instance->state.data.addrs->elts, sizeof(ngx_addr_t) * instance->conf.max_ips);
 
 	instance->state.data.names = ngx_array_create(cf->pool, instance->conf.max_ips, NGX_SOCKADDR_STRLEN);
 	if (!instance->state.data.names) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create names fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create names fail");
+		return NGX_ERROR;
 	}
 	if (!ngx_array_push_n(instance->state.data.names, instance->conf.max_ips)) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n names fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n names fail");
+		return NGX_ERROR;
 	}
 	ngx_memzero(instance->state.data.names->elts, NGX_SOCKADDR_STRLEN * instance->conf.max_ips);
 
 	instance->state.data.peerps = ngx_array_create(cf->pool, instance->conf.max_ips, sizeof(ngx_http_upstream_rr_peer_t *));
 	if (!instance->state.data.peerps) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create peerps fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create peerps fail");
+		return NGX_ERROR;
 	}
 	if (!ngx_array_push_n(instance->state.data.peerps, instance->conf.max_ips)) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n peerps fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n peerps fail");
+		return NGX_ERROR;
 	}
 	ngx_memzero(instance->state.data.peerps->elts, sizeof(ngx_http_upstream_rr_peer_t *) * instance->conf.max_ips);
 
 	instance->state.data.sockaddrs = ngx_array_create(cf->pool, instance->conf.max_ips, NGX_SOCKADDRLEN);
 	if (!instance->state.data.sockaddrs) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create sockaddrs fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_create sockaddrs fail");
+		return NGX_ERROR;
 	}
 	if (!ngx_array_push_n(instance->state.data.sockaddrs, instance->conf.max_ips)) {
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n sockaddrs fail");
-		            return NGX_ERROR;
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "ngx_http_upstream_jdomain_module: ngx_array_push_n sockaddrs fail");
+		return NGX_ERROR;
 	}
 	ngx_memzero(instance->state.data.sockaddrs->elts, NGX_SOCKADDRLEN * instance->conf.max_ips);
 
@@ -522,9 +523,9 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	errstr = ngx_pcalloc(cf->temp_pool, NGX_MAX_CONF_ERRSTR);
 	if (!errstr) {
-		            rc = "ngx_http_upstream_jdomain_module: ngx_pcalloc errstr fail";
-		            ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, rc);
-		            return rc;
+		rc = "ngx_http_upstream_jdomain_module: ngx_pcalloc errstr fail";
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, rc);
+		return rc;
 	}
 
 	uscf = ngx_http_conf_get_module_srv_conf(cf, ngx_http_upstream_module);
@@ -544,13 +545,13 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	/* Create underlying upstream server structure and set default values */
 	uscf->servers = uscf->servers ? uscf->servers : ngx_array_create(cf->pool, 1, sizeof(ngx_http_upstream_server_t));
 	if (!uscf->servers) {
-		            ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_array_create servers fail");
-		            goto failure;
+		ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_array_create servers fail");
+		goto failure;
 	}
 	server = ngx_array_push(uscf->servers);
 	if (!server) {
-		            ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_array_push server fail");
-		            goto failure;
+		ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_array_push server fail");
+		goto failure;
 	}
 	ngx_memzero(server, sizeof(ngx_http_upstream_server_t));
 	server->fail_timeout = NGX_JDOMAIN_DEFAULT_SERVER_FAIL_TIMEOUT;
@@ -560,8 +561,8 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	/* Allocate space for state of an instance of a jdomain upstream */
 	instance = ngx_http_upstream_jdomain_create_instance(cf, jcf);
 	if (!instance) {
-		            ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_create_instance fail");
-		            goto failure;
+		ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_create_instance fail");
+		goto failure;
 	}
 	instance->parent = uscf;
 	instance->state.data.server = server;
@@ -573,65 +574,65 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	/* Parse arguments */
 	for (i = 2; i < cf->args->nelts; i++) {
-		            arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_INTERVAL);
-		            if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_INTERVAL, arglen) == 0) {
-			            s.len = value[i].len - arglen;
-			            s.data = &value[i].data[arglen];
-			            instance->conf.interval = ngx_parse_time(&s, 1);
-			            if (instance->conf.interval < 1) {
-				            goto invalid;
-			            }
-			            continue;
-		            }
+		arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_INTERVAL);
+		if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_INTERVAL, arglen) == 0) {
+			s.len = value[i].len - arglen;
+			s.data = &value[i].data[arglen];
+			instance->conf.interval = ngx_parse_time(&s, 1);
+			if (instance->conf.interval < 1) {
+				goto invalid;
+			}
+			continue;
+		}
 
-		            arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_MAX_IPS);
-		            if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_MAX_IPS, arglen) == 0) {
-			            num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
-			            if (num < 1) {
-				            goto invalid;
-			            }
-			            instance->conf.max_ips = num;
-			            continue;
-		            }
+		arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_MAX_IPS);
+		if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_MAX_IPS, arglen) == 0) {
+			num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
+			if (num < 1) {
+				goto invalid;
+			}
+			instance->conf.max_ips = num;
+			continue;
+		}
 
-		            arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_PORT);
-		            if (ngx_strncmp(value[i].data, "port=", arglen) == 0) {
-			            num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
-			            if (num < 1 || num != (in_port_t)num) {
-				            goto invalid;
-			            }
-			            instance->conf.port = num;
-			            port_len = value[i].len - arglen;
-			            continue;
-		            }
+		arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_PORT);
+		if (ngx_strncmp(value[i].data, "port=", arglen) == 0) {
+			num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
+			if (num < 1 || num != (in_port_t)num) {
+				goto invalid;
+			}
+			instance->conf.port = num;
+			port_len = value[i].len - arglen;
+			continue;
+		}
 
-		            arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_IPVER);
-		            if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_IPVER, arglen) == 0) {
-			            num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
-			            switch (num) {
-				            case NGX_JDOMAIN_IPV4:
-					            instance->conf.addr_family = NGX_JDOMAIN_FAMILY_IPV4;
-					            break;
-				            case NGX_JDOMAIN_IPV6:
-					            instance->conf.addr_family = NGX_JDOMAIN_FAMILY_IPV6;
-					            break;
-				            case 0:
-					            // valid as default
-					            break;
-				            default:
-					            goto invalid;
-			            }
+		arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_IPVER);
+		if (ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_IPVER, arglen) == 0) {
+			num = ngx_atoi(value[i].data + arglen, value[i].len - arglen);
+			switch (num) {
+				case NGX_JDOMAIN_IPV4:
+					instance->conf.addr_family = NGX_JDOMAIN_FAMILY_IPV4;
+					break;
+				case NGX_JDOMAIN_IPV6:
+					instance->conf.addr_family = NGX_JDOMAIN_FAMILY_IPV6;
+					break;
+				case 0:
+					// valid as default
+					break;
+				default:
+					goto invalid;
+			}
 
-			            continue;
-		            }
+			continue;
+		}
 
-		            arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_STRICT);
-		            if (value[i].len == arglen && ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_STRICT, arglen) == 0) {
-			            instance->conf.strict = 1;
-			            continue;
-		            }
+		arglen = ngx_strlen(NGX_JDOMAIN_ARG_STR_STRICT);
+		if (value[i].len == arglen && ngx_strncmp(value[i].data, NGX_JDOMAIN_ARG_STR_STRICT, arglen) == 0) {
+			instance->conf.strict = 1;
+			continue;
+		}
 
-		            goto invalid;
+		goto invalid;
 	}
 
 	instance->conf.domain.data = value[1].data;
@@ -644,8 +645,8 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 	/* Initialize state data */
 	if (ngx_http_upstream_jdomain_init_instance_data(cf, instance) != NGX_OK) {
-		            ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_init_instance_data fail");
-		            goto failure;
+		ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_init_instance_data fail");
+		goto failure;
 	}
 
 	ngx_memzero(&u, sizeof(ngx_url_t));
@@ -655,19 +656,19 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	exists_alt_server = 0;
 	server_iter = instance->parent->servers->elts;
 	for (i = 0; i < instance->parent->servers->nelts; i++) {
-		            if (&server_iter[i] != server && !server_iter[i].down) {
-			            exists_alt_server = 1;
-			            break;
-		            }
+		if (&server_iter[i] != server && !server_iter[i].down) {
+			exists_alt_server = 1;
+			break;
+		}
 	}
 
 	/* Initial domain name resolution */
 	if (ngx_parse_url(cf->temp_pool, &u) != NGX_OK) {
-		            ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: %s in upstream \"%V\"", u.err ? u.err : "error", &u.url);
-		            if (!exists_alt_server) {
-			            goto failure;
-		            }
-		            ngx_conf_log_error(NGX_LOG_ERR, cf, 0, (const char *)errstr);
+		ngx_sprintf(errstr, "ngx_http_upstream_jdomain_module: %s in upstream \"%V\"", u.err ? u.err : "error", &u.url);
+		if (!exists_alt_server) {
+			goto failure;
+		}
+		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, (const char *)errstr);
 	}
 
 	addr = server->addrs = instance->state.data.addrs->elts;
@@ -676,30 +677,30 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers */
 	f = 0;
 	for (i = 0; i < u.naddrs; i++) {
-		            if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
-		                instance->conf.addr_family != u.addrs[i].sockaddr->sa_family) {
-			            continue;
-		            }
-		            addr[f].name.data = &name[f * NGX_SOCKADDR_STRLEN];
-		            addr[f].name.len = u.addrs[i].name.len;
-		            ngx_memcpy(addr[f].name.data, u.addrs[i].name.data, addr[f].name.len);
-		            addr[f].sockaddr = &sockaddr[f].sockaddr;
-		            addr[f].socklen = u.addrs[i].socklen;
-		            ngx_memcpy(addr[f].sockaddr, u.addrs[i].sockaddr, addr[f].socklen);
-		            f++;
-		            if (instance->conf.max_ips == f) {
-			            break;
-		            }
+		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
+		    instance->conf.addr_family != u.addrs[i].sockaddr->sa_family) {
+			continue;
+		}
+		addr[f].name.data = &name[f * NGX_SOCKADDR_STRLEN];
+		addr[f].name.len = u.addrs[i].name.len;
+		ngx_memcpy(addr[f].name.data, u.addrs[i].name.data, addr[f].name.len);
+		addr[f].sockaddr = &sockaddr[f].sockaddr;
+		addr[f].socklen = u.addrs[i].socklen;
+		ngx_memcpy(addr[f].sockaddr, u.addrs[i].sockaddr, addr[f].socklen);
+		f++;
+		if (instance->conf.max_ips == f) {
+			break;
+		}
 	}
 	instance->state.data.naddrs = server->naddrs = f;
 	/* Copy the sockaddr and address name of the invalid address (0.0.0.0:0) into the remaining buffers */
 	for (i = instance->state.data.naddrs; i < instance->conf.max_ips; i++) {
-		            addr[i].name.data = &name[i * NGX_SOCKADDR_STRLEN];
-		            addr[i].name.len = NGX_JDOMAIN_INVALID_ADDR.name.len;
-		            ngx_memcpy(addr[i].name.data, NGX_JDOMAIN_INVALID_ADDR.name.data, addr[i].name.len);
-		            addr[i].sockaddr = &sockaddr[i].sockaddr;
-		            addr[i].socklen = NGX_JDOMAIN_INVALID_ADDR.socklen;
-		            ngx_memcpy(addr[i].sockaddr, NGX_JDOMAIN_INVALID_ADDR.sockaddr, addr[i].socklen);
+		addr[i].name.data = &name[i * NGX_SOCKADDR_STRLEN];
+		addr[i].name.len = NGX_JDOMAIN_INVALID_ADDR.name.len;
+		ngx_memcpy(addr[i].name.data, NGX_JDOMAIN_INVALID_ADDR.name.data, addr[i].name.len);
+		addr[i].sockaddr = &sockaddr[i].sockaddr;
+		addr[i].socklen = NGX_JDOMAIN_INVALID_ADDR.socklen;
+		ngx_memcpy(addr[i].sockaddr, NGX_JDOMAIN_INVALID_ADDR.sockaddr, addr[i].socklen);
 	}
 
 	/* This is a hack to allow nginx to load without complaint in case there are other server directives in the upstream block */
