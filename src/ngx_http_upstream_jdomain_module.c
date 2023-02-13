@@ -2,6 +2,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <ngx_socket.h>
 
 #define NGX_JDOMAIN_STATUS_DONE 0
 #define NGX_JDOMAIN_STATUS_WAIT 1
@@ -344,16 +345,20 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers, marking associated peers up */
 	f = 0;
 	for (i = 0; i < ctx->naddrs; i++) {
+		u_char text[NGX_SOCKADDR_STRLEN];
+		if (ngx_sock_ntop(ctx->addrs[i].sockaddr, text, NGX_SOCKADDR_STRLEN, 1) != NGX_OK) {
+			ngx_log_error(NGX_LOG_ERR, log, 0, "ngx_http_upstream_jdomain_module: ngx_sock_ntop failed");
+		}
 		ngx_log_error(
 		  NGX_LOG_ERR,
 		  ctx->resolver->log,
 		  0,
-		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i, address : \"%V\" ",
+		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i, sa_data: %s",
 		  &ctx->name,
 		  f,
 		  instance->conf.addr_family,
 		  ctx->addrs[i].sockaddr->sa_family,
-		  &ctx->addrs[i].sockaddr->sa_data);
+		  text);
 
 		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
 		    instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
