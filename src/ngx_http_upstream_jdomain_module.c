@@ -2,6 +2,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <ngx_socket.h>
 
 #define NGX_JDOMAIN_STATUS_DONE 0
 #define NGX_JDOMAIN_STATUS_WAIT 1
@@ -253,9 +254,17 @@ ngx_http_upstream_init_jdomain_peer(ngx_http_request_t *r, ngx_http_upstream_srv
 			  NGX_LOG_ALERT, r->connection->log, 0, "ngx_http_upstream_jdomain_module: ngx_resolve_name \"%V\" fail", &ctx->name);
 			continue;
 		}
-		if (ctx->state == NGX_AGAIN) {
-			instance[i].state.resolve.status = NGX_JDOMAIN_STATUS_WAIT;
-		}
+		// if (ctx->state == NGX_AGAIN) {
+		// 	instance[i].state.resolve.status = NGX_JDOMAIN_STATUS_WAIT;
+		// }
+		ngx_log_error(NGX_LOG_ERR,
+		              r->connection->log,
+		              0,
+		              "ngx_http_upstream_jdomain_module: resolve state: \"%V\" (%i: %s), rc: %i",
+		              &ctx->name,
+		              ctx->state,
+		              ngx_resolver_strerror(ctx->state),
+		              rc);
 	}
 
 end:
@@ -280,6 +289,12 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	ngx_addr_t *addr;
 	ngx_http_upstream_rr_peer_t **peerp;
 
+	ngx_log_error(NGX_LOG_ERR,
+	              ctx->resolver->log,
+	              0,
+	              "ngx_http_upstream_jdomain_module: ngx_http_upstream_jdomain_resolve_handler called: \"%V\"",
+	              &ctx->name);
+
 	instance = (ngx_http_upstream_jdomain_instance_t *)ctx->data;
 
 	exists_alt_server = 0;
@@ -295,17 +310,31 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	if (ctx->state || ctx->naddrs == 0) {
 		instance->state.data.server->down =
 		  exists_alt_server && (instance->conf.strict || ctx->state == NGX_RESOLVE_FORMERR || ctx->state == NGX_RESOLVE_NXDOMAIN);
-		ngx_log_error((instance->state.data.server->down ? NGX_LOG_WARN : NGX_LOG_ERR),
+		ngx_log_error(NGX_LOG_ERR,
 		              ctx->resolver->log,
 		              0,
-		              "ngx_http_upstream_jdomain_module: resolver failed, \"%V\" (%i: %s)",
+		              "ngx_http_upstream_jdomain_module: resolver failed:\"%V\" (%i: %s), isDown: %i, exists_alt_server: %i",
 		              &ctx->name,
 		              ctx->state,
-		              ngx_resolver_strerror(ctx->state));
+		              ngx_resolver_strerror(ctx->state),
+		              instance->state.data.server->down,
+		              exists_alt_server);
 		if (!instance->state.data.server->down) {
 			goto end;
 		}
 	}
+
+	ngx_log_error(
+	  NGX_LOG_ERR,
+	  ctx->resolver->log,
+	  0,
+	  "ngx_http_upstream_jdomain_module: resolver state: \"%V\" (%i: %s), addresses: %i, isDown: %i, exists_alt_server: %i",
+	  &ctx->name,
+	  ctx->state,
+	  ngx_resolver_strerror(ctx->state),
+	  ctx->naddrs,
+	  instance->state.data.server->down,
+	  exists_alt_server);
 
 	addr = instance->state.data.addrs->elts;
 	name = instance->state.data.names->elts;
@@ -316,6 +345,23 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers, marking associated peers up */
 	f = 0;
 	for (i = 0; i < ctx->naddrs; i++) {
+		socklen_t text_len = NGX_SOCKADDR_STRLEN;
+		u_char address[text_len];
+		ngx_memzero(address, text_len);
+		if (ngx_sock_ntop(ctx->addrs[i].sockaddr, text_len, address, text_len, 0) != NGX_OK) {
+			ngx_log_error(NGX_LOG_ERR, ctx->resolver->log, 0, "ngx_http_upstream_jdomain_module: ngx_sock_ntop failed");
+		}
+		ngx_log_error(
+		  NGX_LOG_ERR,
+		  ctx->resolver->log,
+		  0,
+		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i, sa_data: %s",
+		  &ctx->name,
+		  f,
+		  instance->conf.addr_family,
+		  ctx->addrs[i].sockaddr->sa_family,
+		  address);
+
 		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
 		    instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
 			continue;
@@ -349,6 +395,7 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 
 end:
 	/* Release the resolver context and mark the completion in the instance state */
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, ctx->resolver->log, 0, "ngx_http_upstream_jdomain_module: resolver end");
 	ngx_resolve_name_done(ctx);
 	instance->state.resolve.access = ngx_time();
 	instance->state.resolve.status = NGX_JDOMAIN_STATUS_DONE;
@@ -639,7 +686,7 @@ ngx_http_upstream_jdomain(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		if (!exists_alt_server) {
 			goto failure;
 		}
-		ngx_conf_log_error(NGX_LOG_WARN, cf, 0, (const char *)errstr);
+		ngx_conf_log_error(NGX_LOG_ERR, cf, 0, (const char *)errstr);
 	}
 
 	addr = server->addrs = instance->state.data.addrs->elts;
