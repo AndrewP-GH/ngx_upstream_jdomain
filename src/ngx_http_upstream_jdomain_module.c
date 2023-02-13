@@ -348,9 +348,12 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 		  NGX_LOG_ERR,
 		  ctx->resolver->log,
 		  0,
-		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i,
-		  address
-		  : \"%V\" ", &ctx->name, f, instance->conf.addr_family, ctx->addrs[i].sockaddr->sa_family, &sockaddr[f].sockaddr);
+		  "ngx_http_upstream_jdomain_module: add address for \"%V\", f: %i, instance_family: %i, sa_family: %i, address : \"%V\" ",
+		  &ctx->name,
+		  f,
+		  instance->conf.addr_family,
+		  ctx->addrs[i].sockaddr->sa_family,
+		  &ctx->addrs[i].sockaddr->sa_data);
 
 		if (instance->conf.addr_family != NGX_JDOMAIN_FAMILY_DEFAULT &&
 		    instance->conf.addr_family != ctx->addrs[i].sockaddr->sa_family) {
