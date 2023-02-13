@@ -345,8 +345,9 @@ ngx_http_upstream_jdomain_resolve_handler(ngx_resolver_ctx_t *ctx)
 	/* Copy the resolved sockaddrs and address names (IP:PORT) into our state data buffers, marking associated peers up */
 	f = 0;
 	for (i = 0; i < ctx->naddrs; i++) {
-		u_char address[NGX_SOCKADDR_STRLEN];
 		socklen_t text_len = NGX_SOCKADDR_STRLEN;
+		u_char address[text_len];
+		ngx_memzero(address, text_len);
 		if (ngx_sock_ntop(ctx->addrs[i].sockaddr, text_len, address, text_len, 0) != NGX_OK) {
 			ngx_log_error(NGX_LOG_ERR, ctx->resolver->log, 0, "ngx_http_upstream_jdomain_module: ngx_sock_ntop failed");
 		}
